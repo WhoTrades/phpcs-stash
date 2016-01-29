@@ -1,0 +1,19 @@
+{
+    "name": "whotrades/phpcs-stash",
+    "type": "library",
+    "author": "Artem Naumenko",
+    "description": "Integration between phpcs and atlassian stash",
+    "autoload": {
+        "psr-4": {
+            "PhpCsStash\\": "lib/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "squizlabs/php_codesniffer": "~2.5",
+        "escapestudios/symfony2-coding-standard": "~2.0",
+        "guzzlehttp/guzzle": "~5.3",
+        "monolog/monolog": "~1.17",
+        "php": "~5.4"
+    }
+}

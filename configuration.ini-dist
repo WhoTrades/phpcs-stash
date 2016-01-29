@@ -1,10 +1,10 @@
 [stash]
 ; базовая ссылка на ваш atlassian stash со слешом вконце
-url = "http://msa-app-stash.office.finam.ru/"
+url = "http://stash.com/"
 ; Имя пользователя, от которого будет производиться интеграция
-username = "RDS"
+username = "apiUser"
 ; Пароль пользователя, от которого будет производиться интеграция
-password = "yz7119agyh"
+password = "apiUserpassword"
 ; Максимальное время ожидания ответа stash сервера. Эту настройку рекомендуется не менять
 httpTimeout = 90
 
@@ -14,7 +14,6 @@ encoding=utf8
 ; Стандарт кодирония. Этот аргумент передается phpcs в аргументе --standard
 standard=Psr2
 ; Пути установки дополнительных стилей кодирования
-;installed_paths='%root%/Standards/,%root%/vendor/escapestudios/symfony2-coding-standard/'
 installed_paths=''
 
 [logging]
@@ -24,21 +23,3 @@ dir=log
 verbosityError=ERROR
 ; уровень вербозности info-лога
 verbosityLog=DEBUG
-
-
-;[core]
-;; <b>sync</b> - обрабатывать все во время HTTP запроса. Такой метод не очень надежен, так как при временном отказе сети или
-;; atlassian stash валидация кода не будет проведена
-;; <b>async</b> - во время запроса добавлять задачу в очередь, которую потом обработать в фоновом процессе. Такой метод
-;; более надежен, так как в случае ошибки мы просто попытаемся обработать ещё раз, но сложнее в установке и настройке
-;mode=sync
-;; путь к папке логов относительно корня приложения. При удалении файлов из этой папки часть пул реквестом могут быть не обработаны
-;data_dir=data
-;
-;[queue]
-;; Настройка нужна только для core.mode=async.
-;; Вазовый класс очереди, который будет использоваться для работы с очередью, класс должен реализовывать интерфейс PhpCsStash\InterfaceTaskQueue
-;; Возможные варианты:
-;; - PhpCsStash\RuntimeTaskQueue - используется ТОЛЬКО для core.mode=sync. Хранит события в памяти, в случае падения скрипта задачи будут потеряны
-;; - PhpCsStash\FileTaskQueue - Хранит события в обычных файлах в папке core.data_dir
-;queue_class_name=PhpCsStash\RuntimeTaskQueue

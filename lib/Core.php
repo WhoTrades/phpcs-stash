@@ -46,11 +46,11 @@ class Core
         $dir = $this->config['logging']['dir']."/";
 
         $this->log->pushHandler(
-            new StreamHandler($dir.date("Y-m-d").".log", $this->config['log']['verbosityLog'])
+            new StreamHandler($dir.date("Y-m-d").".log", $this->config['logging']['verbosityLog'])
         );
 
         $this->log->pushHandler(
-            new StreamHandler($dir.date("Y-m-d").".log", $this->config['log']['verbosityError'])
+            new StreamHandler($dir.date("Y-m-d").".log", $this->config['logging']['verbosityError'])
         );
 
         $this->log->pushHandler(

@@ -65,7 +65,6 @@ class RequestProcessor
             $this->log->debug("installed_paths=".$GLOBALS['PHP_CODESNIFFER_CONFIG_DATA']['installed_paths']);
         }
 
-        require_once(__DIR__."/../vendor/squizlabs/php_codesniffer/CodeSniffer.php");
         /** @var $phpcs \PHP_CodeSniffer*/
         $phpcs = new \PHP_CodeSniffer(
             $verbosity = 0,

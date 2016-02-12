@@ -34,6 +34,7 @@ class RequestProcessor
     /**
      * @param StashApi $stash
      * @param Logger   $log
+     * @param array    $phpcsConfig
      */
     public function __construct(StashApi $stash, Logger $log, array $phpcsConfig)
     {
@@ -46,6 +47,8 @@ class RequestProcessor
      * @param string $slug
      * @param string $repo
      * @param string $ref
+     *
+     * @return array
      */
     public function processRequest($slug, $repo, $ref)
     {
@@ -84,12 +87,13 @@ class RequestProcessor
         $this->log->info("Found {$pullRequests['size']} pull requests");
         foreach ($pullRequests['values'] as $pullRequest) {
             $this->log->info(
-                "Processing pull request #{$pullRequest['id']}"
-                ." {$pullRequest['fromRef']['latestChangeset']}..{$pullRequest['toRef']['latestChangeset']}"
+                "Processing pull request #{$pullRequest['id']} {$pullRequest['fromRef']['latestChangeset']}..{$pullRequest['toRef']['latestChangeset']}"
             );
 
+            $result = [];
             try {
                 $changes = $this->stash->getPullRequestDiffs($slug, $repo, $pullRequest['id']);
+
                 foreach ($changes['diffs'] as $diff) {
                     $comments = [];
 
@@ -101,32 +105,33 @@ class RequestProcessor
 
                     $filename = $diff['destination']['toString'];
                     $this->log->info("Processing file $filename");
-                    $affectedLines = [];
 
-                    foreach ($diff['hunks'] as $hunk) {
-                        foreach ($hunk['segments'] as $segment) {
-                            if ($segment['type'] == 'CONTEXT' || $segment['type'] == 'REMOVED') {
-                                continue;
-                            }
-                            foreach ($segment['lines'] as $line) {
-                                $affectedLines[$line['destination']] = true;
-                            }
-                        }
-                    }
-
-                    $this->log->info("Affected lines: ".$this->visualizeNumbersToInterval(array_keys($affectedLines)));
-
-                    $fileContent = $this->stash->getFileContent($slug, $repo, $ref, $filename);
-
-                    $this->log->debug("File content length: ".mb_strlen($filename, $this->phpcsConfig['encoding']));
-
-                    if (!$phpcs->shouldIgnoreFile($filename, "./")) {
-                        $result = $phpcs->processFile($filename, $fileContent);
-                        $errors = $result->getErrors();
-                        $this->log->info("Summary errors count: ".count($errors));
-                    } else {
+                    if ($phpcs->shouldIgnoreFile($filename, "./")) {
                         $this->log->info("File is in ignore list, so no errors can be found");
                         $errors = [];
+                    } else {
+                        $affectedLines = [];
+
+                        foreach ($diff['hunks'] as $hunk) {
+                            foreach ($hunk['segments'] as $segment) {
+                                if ($segment['type'] == 'CONTEXT' || $segment['type'] == 'REMOVED') {
+                                    continue;
+                                }
+                                foreach ($segment['lines'] as $line) {
+                                    $affectedLines[$line['destination']] = true;
+                                }
+                            }
+                        }
+
+                        $this->log->info("Affected lines: ".$this->visualizeNumbersToInterval(array_keys($affectedLines)));
+
+                        $fileContent = $this->stash->getFileContent($slug, $repo, $pullRequest['id'], $filename);
+
+                        $this->log->debug("File content length: ".mb_strlen($fileContent, $this->phpcsConfig['encoding']));
+
+                        $phpCsResult = $phpcs->processFile($filename, $fileContent);
+                        $errors = $phpCsResult->getErrors();
+                        $this->log->info("Summary errors count: ".count($errors));
                     }
 
                     foreach ($errors as $line => $data) {
@@ -135,18 +140,21 @@ class RequestProcessor
                         }
 
                         if (!isset($comments[$line])) {
-                            $comments[$line] = "";
+                            $comments[$line] = [];
                         }
 
                         foreach ($data as $column => $errors) {
                             foreach ($errors as $error) {
-                                $comments[$line] .= "{$error['message']}\n";
+                                $comments[$line][] = "{$error['message']}\n";
                             }
                         }
-                        $comments[$line] = trim($comments[$line]);
                     }
 
-                    $this->log->info("Summary errors count atfer filtration: ".count($comments));
+                    $comments = array_map(function ($val) {
+                        return implode("\n", array_unique($val));
+                    }, $comments);
+
+                    $this->log->info("Summary errors count after filtration: ".count($comments));
 
                     $existingComments = $this->stash->getPullRequestComments(
                         $slug,
@@ -212,11 +220,12 @@ class RequestProcessor
                             $line,
                             $comment
                         );
+
+                        $result[$filename][$line] = $comment;
                     }
                 }
 
-                return "OK";
-
+                return $result;
             } catch (ClientException $e) {
                 $this->log->critical("Error integration with stash: ".$e->getMessage(), [
                     'type' => 'client',
@@ -232,12 +241,13 @@ class RequestProcessor
             }
         }
 
-        return 'OK';
+        // No pull requests found, so no errors
+        return [];
     }
 
     /**
-     * Преобразовывает массив чисел в удобо-читаемую строку. Например, числа 1,2,3,4,10,11 преобразует в 1-4,10,11
-     * @param array $numbers - массив целых чисел
+     * Converts array of numbers to human-readable string. Example, [1,2,3,4,10,11] -> "1-4,10,11"
+     * @param array $numbers - input numbers array
      * @return string
      */
     private function visualizeNumbersToInterval($numbers)

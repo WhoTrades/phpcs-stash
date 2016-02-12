@@ -15,7 +15,7 @@ $slug = isset($_GET['slug']) ? $_GET['slug'] : null;
 $repo = isset($_GET['repo']) ? $_GET['repo'] : null;
 
 try {
-    echo $core->runSync($branch, $slug, $repo);
+    var_dump($core->runSync($branch, $slug, $repo));
 } catch (\InvalidArgumentException $e) {
     header("HTTP/1.0 400 Bad Request");
 }

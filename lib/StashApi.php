@@ -70,11 +70,28 @@ class StashApi
      * @param string $filename
      * @return string
      */
-    public function getFileContent($slug, $repo, $ref, $filename)
+    public function getFileContent($slug, $repo, $pullRequestId, $filename)
     {
-        $content = (string) $this->httpClient->get("/projects/$slug/repos/$repo/browse/$filename?at=$ref&raw")->getBody();
+        $changes = $this->getPullRequestDiffs($slug, $repo, $pullRequestId, 100000, $filename);
 
-        return $content;
+        $result = [];
+        foreach ($changes['diffs'] as $diff) {
+            if ($diff['destination']['toString'] !== $filename) {
+                continue;
+            }
+
+            foreach ($diff['hunks'] as $hunk) {
+                foreach ($hunk['segments'] as $segment) {
+                    foreach ($segment['lines'] as $line) {
+                        $result[$line['destination']] = $line['line'];
+                    }
+                }
+            }
+        }
+
+        ksort($result);
+
+        return implode("\n", $result);
     }
 
     /**
@@ -83,13 +100,17 @@ class StashApi
      * @param string $slug
      * @param string $repo
      * @param int    $pullRequestId
+     * @param int    $contextLines
+     * @param string $path
      * @return array
      *
      * @see https://developer.atlassian.com/static/rest/stash/3.11.3/stash-rest.html#idp992528
      */
-    public function getPullRequestDiffs($slug, $repo, $pullRequestId)
+    public function getPullRequestDiffs($slug, $repo, $pullRequestId, $contextLines = 10, $path = "")
     {
-        return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/diff", "GET", []);
+        return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/diff/$path", "GET", [
+            'contextLines' => $contextLines,
+        ]);
     }
 
     /**

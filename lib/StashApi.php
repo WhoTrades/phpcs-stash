@@ -9,6 +9,7 @@ namespace PhpCsStash;
 
 use GuzzleHttp\Client;
 use Monolog\Logger;
+use \GuzzleHttp\Exception\RequestException;
 
 /**
  * Class StashApi
@@ -224,12 +225,21 @@ class StashApi
 
     private function sendRequest($url, $method, $request)
     {
-        if (strtoupper($method) == 'GET') {
-            $reply = $this->httpClient->get($url, ['query' => $request]);
-        } else {
-            $reply = $this->httpClient->send(
-                $this->httpClient->createRequest($method, $url, ['body' => json_encode($request)])
-            );
+        try {
+            if (strtoupper($method) == 'GET') {
+                $reply = $this->httpClient->get($url, ['query' => $request]);
+            } else {
+                $reply = $this->httpClient->send(
+                    $this->httpClient->createRequest($method, $url, ['body' => json_encode($request)])
+                );
+            }
+        } catch (RequestException $e) {
+            //Stash error: it can't send more then 1mb of json data. So just skip suck pull requests or files
+            if ($e->getMessage() == 'cURL error 56: Problem (3) in the Chunked-Encoded data') {
+                throw new \Exception\StashJsonFailure($e->getMessage(), $e->getRequest(), $e->getResponse(), $e);
+            } else {
+                throw $e;
+            }
         }
 
         $json = (string) $reply->getBody();

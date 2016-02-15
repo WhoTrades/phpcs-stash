@@ -6,6 +6,7 @@
  */
 namespace PhpCsStash;
 
+use Exception\StashJsonFailure;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use Monolog\Logger;
@@ -91,8 +92,9 @@ class RequestProcessor
             );
 
             $result = [];
+
             try {
-                $changes = $this->stash->getPullRequestDiffs($slug, $repo, $pullRequest['id']);
+                $changes = $this->stash->getPullRequestDiffs($slug, $repo, $pullRequest['id'], 0);
 
                 foreach ($changes['diffs'] as $diff) {
                     $comments = [];
@@ -125,7 +127,12 @@ class RequestProcessor
 
                         $this->log->info("Affected lines: ".$this->visualizeNumbersToInterval(array_keys($affectedLines)));
 
-                        $fileContent = $this->stash->getFileContent($slug, $repo, $pullRequest['id'], $filename);
+                        try {
+                            $fileContent = $this->stash->getFileContent($slug, $repo, $pullRequest['id'], $filename);
+                        } catch (StashJsonFailure $e) {
+                            $this->log->error("Can't get contents of $filename at pull erquest #{$pullRequest['id']}");
+                            continue;
+                        }
 
                         $this->log->debug("File content length: ".mb_strlen($fileContent, $this->phpcsConfig['encoding']));
 
@@ -238,6 +245,8 @@ class RequestProcessor
                     'reply' => (string) $e->getResponse()->getBody(),
                     'headers' => $e->getResponse()->getHeaders(),
                 ]);
+            } catch (StashJsonFailure $e) {
+                $this->log->error("Json failure at pull request #{$pullRequest['id']}: ".$e->getMessage());
             }
         }
 

@@ -92,7 +92,7 @@ class StashApi
 
         ksort($result);
 
-        return implode("\n", $result);
+        return implode("\n", $result)."\n";
     }
 
     /**

@@ -181,13 +181,26 @@ class RequestProcessor
                                     'file' => $filename,
                                 ]);
 
-                                $this->stash->deletePullRequestComment(
-                                    $slug,
-                                    $repo,
-                                    $pullRequest['id'],
-                                    $comment['version'],
-                                    $comment['id']
-                                );
+                                if (empty($comment['comments'])) {
+                                    $this->stash->deletePullRequestComment(
+                                        $slug,
+                                        $repo,
+                                        $pullRequest['id'],
+                                        $comment['version'],
+                                        $comment['id']
+                                    );
+                                } else {
+                                    //If there are replies to our comment - just strike through our message
+                                    //@see https://confluence.atlassian.com/display/STASH0310/Markdown+syntax+guide#Markdownsyntaxguide-Characterstyles
+                                    $this->stash->updatePullRequestComment(
+                                        $slug,
+                                        $repo,
+                                        $pullRequest['id'],
+                                        $comment['id'],
+                                        $comment['version'],
+                                        preg_replace("/^~+(.*)^/", "~~$1", $comment["text"])
+                                    );
+                                }
 
                             } elseif (trim($comment['text']) != trim($comments[$comment['anchor']['line']])) {
                                 // Comment exist at remote and exists now, but text are different - so modify remote text

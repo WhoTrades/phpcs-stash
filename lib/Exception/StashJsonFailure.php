@@ -6,7 +6,7 @@
  * we receive error "cURL error 56: Problem (3) in the Chunked-Encoded data", and they will be translated to
  * this exeption
  */
-namespace Exception;
+namespace PhpCsStash\Exception;
 
 use \GuzzleHttp\Exception\RequestException;
 

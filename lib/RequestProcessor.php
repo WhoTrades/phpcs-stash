@@ -6,7 +6,8 @@
  */
 namespace PhpCsStash;
 
-use Exception\StashJsonFailure;
+use PhpCsStash\Exception\StashJsonFailure;
+use PhpCsStash\Exception\StashFileInConflict;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use Monolog\Logger;
@@ -129,8 +130,11 @@ class RequestProcessor
 
                         try {
                             $fileContent = $this->stash->getFileContent($slug, $repo, $pullRequest['id'], $filename);
+                        } catch (StashFileInConflict $e) {
+                            $this->log->error("File $filename at pull request #{$pullRequest['id']} os in conflict state, skip code style checking");
+                            continue;
                         } catch (StashJsonFailure $e) {
-                            $this->log->error("Can't get contents of $filename at pull erquest #{$pullRequest['id']}");
+                            $this->log->error("Can't get contents of $filename at pull request #{$pullRequest['id']}");
                             continue;
                         }
 

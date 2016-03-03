@@ -7,6 +7,7 @@
  */
 namespace PhpCsStash;
 
+use PhpCsStash\Exception\StashFileInConflict;
 use GuzzleHttp\Client;
 use Monolog\Logger;
 use \GuzzleHttp\Exception\RequestException;
@@ -84,6 +85,10 @@ class StashApi
             foreach ($diff['hunks'] as $hunk) {
                 foreach ($hunk['segments'] as $segment) {
                     foreach ($segment['lines'] as $line) {
+                        if (!empty($line['conflictMarker'])) {
+                            throw new StashFileInConflict("File $filename is in conflict state");
+                        }
+
                         $result[$line['destination']] = $line['line'];
                     }
                 }
@@ -236,7 +241,7 @@ class StashApi
         } catch (RequestException $e) {
             //Stash error: it can't send more then 1mb of json data. So just skip suck pull requests or files
             if ($e->getMessage() == 'cURL error 56: Problem (3) in the Chunked-Encoded data') {
-                throw new \Exception\StashJsonFailure($e->getMessage(), $e->getRequest(), $e->getResponse(), $e);
+                throw new Exception\StashJsonFailure($e->getMessage(), $e->getRequest(), $e->getResponse(), $e);
             } else {
                 throw $e;
             }

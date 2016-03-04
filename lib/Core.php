@@ -13,13 +13,13 @@ use Monolog\Handler\BrowserConsoleHandler;
 class Core
 {
     /** @var StashApi */
-    private $stash;
+    protected $stash;
 
     /** @var Logger */
-    private $log;
+    protected $log;
 
     /** @var array */
-    private $config;
+    protected $config;
 
     /**
      * Core constructor.

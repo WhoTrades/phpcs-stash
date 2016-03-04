@@ -165,6 +165,10 @@ class RequestProcessor
                         return implode("\n", array_unique($val));
                     }, $comments);
 
+                    foreach ($comments as $line => $comment) {
+                        $result[$filename][$line] = $comment;
+                    }
+
                     $this->log->info("Summary errors count after filtration: ".count($comments));
 
                     $existingComments = $this->stash->getPullRequestComments(
@@ -244,8 +248,6 @@ class RequestProcessor
                             $line,
                             $comment
                         );
-
-                        $result[$filename][$line] = $comment;
                     }
                 }
 

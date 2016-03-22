@@ -116,6 +116,7 @@ class StashApi
     {
         return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/diff/$path", "GET", [
             'contextLines' => $contextLines,
+            'withComments' => 'false',
         ]);
     }
 

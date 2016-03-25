@@ -6,6 +6,7 @@
  */
 namespace PhpCsStash;
 
+use PhpCsStash\Checker\CheckerInterface;
 use PhpCsStash\Exception\StashJsonFailure;
 use PhpCsStash\Exception\StashFileInConflict;
 use GuzzleHttp\Exception\ClientException;
@@ -29,21 +30,53 @@ class RequestProcessor
     private $log;
 
     /**
+     * @var string
+     */
+    private $typeConfig;
+
+    /**
      * @var array
      */
     private $phpcsConfig;
 
     /**
+     * @var array
+     */
+    private $cppConfig;
+
+    /**
+     * @param string $baseDir
      * @param StashApi $stash
      * @param Logger   $log
+     * @param string   $typeConfig
      * @param array    $phpcsConfig
+     * @param array    $cppConfig
      */
-    public function __construct(StashApi $stash, Logger $log, array $phpcsConfig)
-    {
+    public function __construct(
+		StashApi $stash,
+		Logger $log,
+		array $typeConfig,
+		array $phpcsConfig,
+		array $cppConfig
+	) {
         $this->stash = $stash;
         $this->log = $log;
+        $this->typeConfig = $typeConfig;
         $this->phpcsConfig = $phpcsConfig;
+        $this->cppConfig = $cppConfig;
     }
+	
+	/** @return CheckerInterface */
+	private function createChecker()	
+	{
+		if ($this->typeConfig['type'] == 'phpcs') {
+			return new Checker\PhpCs($this->log, $this->phpcsConfig);
+		} elseif ($this->typeConfig['type'] == 'cpp') {
+			return new Checker\Cpp($this->log, $this->cppConfig, $this->baseDir);
+		} else {
+			throw new \PhpCsStash\Exception\Runtime("Unknown checker type");
+		}
+	}
 
     /**
      * @param string $slug
@@ -58,33 +91,7 @@ class RequestProcessor
 
         $pullRequests = $this->stash->getPullRequestsByBranch($slug, $repo, $ref);
 
-        if (!empty($this->phpcsConfig['installed_paths'])) {
-            $GLOBALS['PHP_CODESNIFFER_CONFIG_DATA'] = array (
-                'installed_paths' => str_replace(
-                    '%root%',
-                    dirname(__DIR__),
-                    $this->phpcsConfig['installed_paths']
-                ),
-            );
-
-            $this->log->debug("installed_paths=".$GLOBALS['PHP_CODESNIFFER_CONFIG_DATA']['installed_paths']);
-        }
-
-        /** @var $phpcs \PHP_CodeSniffer*/
-        $phpcs = new \PHP_CodeSniffer(
-            $verbosity = 0,
-            $tabWidth = 0,
-            $this->phpcsConfig['encoding'],
-            $interactive = false
-        );
-
-        $this->log->debug("PhpCs config", $this->phpcsConfig);
-
-        $phpcs->initStandard($this->phpcsConfig['standard']);
-        $phpcs->cli->setCommandLineValues([
-            '--report=json',
-            '--standard='.$this->phpcsConfig['standard'],
-        ]);
+        $checker = $this->createChecker();
 
         $this->log->info("Found {$pullRequests['size']} pull requests");
         foreach ($pullRequests['values'] as $pullRequest) {
@@ -95,11 +102,12 @@ class RequestProcessor
             $result = [];
 
             try {
+                $this->stash->addMeToPullRequestReviewers($slug, $repo, $pullRequest['id']);
+                
                 $changes = $this->stash->getPullRequestDiffs($slug, $repo, $pullRequest['id'], 0);
 
                 foreach ($changes['diffs'] as $diff) {
                     $comments = [];
-
                     // файл был удален, нечего проверять
                     if ($diff['destination'] === null) {
                         $this->log->info("Skip processing {$diff['source']['toString']}, as it was removed");
@@ -107,9 +115,10 @@ class RequestProcessor
                     }
 
                     $filename = $diff['destination']['toString'];
+                    $extension = $diff['destination']['extension'];
                     $this->log->info("Processing file $filename");
 
-                    if ($phpcs->shouldIgnoreFile($filename, "./")) {
+                    if ($checker->shouldIgnoreFile($filename, $extension, "./")) {
                         $this->log->info("File is in ignore list, so no errors can be found");
                         $errors = [];
                     } else {
@@ -140,8 +149,7 @@ class RequestProcessor
 
                         $this->log->debug("File content length: ".mb_strlen($fileContent, $this->phpcsConfig['encoding']));
 
-                        $phpCsResult = $phpcs->processFile($filename, $fileContent);
-                        $errors = $phpCsResult->getErrors();
+                        $errors = $checker->processFile($filename, $extension, $fileContent);
                         $this->log->info("Summary errors count: ".count($errors));
                     }
 
@@ -250,6 +258,13 @@ class RequestProcessor
                         );
                     }
                 }
+
+                if (!$result) {
+                    $this->stash->approvePullRequest($slug, $repo, $pullRequest['id']);
+                    $this->log->info("Approved pull request #{$pullRequest['id']}");
+                } else {
+					$this->stash->unapprovePullRequest($slug, $repo, $pullRequest['id']);
+				}
 
                 return $result;
             } catch (ClientException $e) {

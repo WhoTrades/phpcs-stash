@@ -20,7 +20,7 @@ class Core
 
     /** @var array */
     protected $config;
-
+	
     /**
      * Core constructor.
      * @param string $configFilename путь к ini файлу конфигурации
@@ -98,7 +98,9 @@ class Core
         $requestProcessor = new RequestProcessor(
             $this->getStash(),
             $this->getLogger(),
-            $this->getConfigSection('phpcs')
+            $this->getConfigSection('type'),
+            $this->getConfigSection('phpcs'),
+            $this->getConfigSection('cpp')
         );
 
         return $requestProcessor->processRequest($slug, $repo, $branch);

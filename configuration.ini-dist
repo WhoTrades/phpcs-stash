@@ -8,6 +8,10 @@ password = "apiUserpassword"
 ; Максимальное время ожидания ответа stash сервера. Эту настройку рекомендуется не менять
 httpTimeout = 90
 
+[type]
+;phpcs или cpp
+type=cpp
+
 [phpcs]
 ; Кодировка файлов в вашем проекте. Если у вас в проекте разные файлы имеют разную кодировку - я вам не завидую :)
 encoding=utf-8
@@ -15,6 +19,13 @@ encoding=utf-8
 standard=Psr2
 ; Пути установки дополнительных стилей кодирования
 installed_paths=''
+
+[cpp]
+; Путь к cpplint
+cpplint=cpplint/cpplint.py
+python27Executable=python
+tmpdir=tmp
+lineLength=120
 
 [logging]
 ; путь к папке логов относительно корня приложения

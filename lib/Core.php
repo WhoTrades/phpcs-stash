@@ -36,7 +36,8 @@ class Core
             $this->getLogger(),
             $stashConfig['url'],
             $stashConfig['username'],
-            $stashConfig['password']
+            $stashConfig['password'],
+            $stashConfig['timeout']
         );
     }
 
@@ -96,13 +97,28 @@ class Core
         }
 
         $requestProcessor = new RequestProcessor(
-            $this->getStash(),
             $this->getLogger(),
-            $this->getConfigSection('type'),
-            $this->getConfigSection('phpcs'),
-            $this->getConfigSection('cpp')
+            $this->getStash(),
+            $this->createChecker()
         );
 
         return $requestProcessor->processRequest($slug, $repo, $branch);
+    }
+
+    /**
+     * @return Checker\CheckerInterface
+     * @throws Exception\Runtime
+     */
+    private function createChecker()
+    {
+        $type = $this->getConfigSection('core')['type'];
+
+        if ($type == 'phpcs') {
+            return new Checker\PhpCs($this->log, $this->getConfigSection('phpcs'));
+        } elseif ($type == 'cpp') {
+            return new Checker\Cpp($this->log, $this->getConfigSection('cpp'));
+        } else {
+            throw new Exception\Runtime("Unknown checker type");
+        }
     }
 }

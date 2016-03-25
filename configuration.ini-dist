@@ -10,7 +10,7 @@ httpTimeout = 90
 
 [type]
 ;phpcs или cpp
-type=cpp
+type=phpcs
 
 [phpcs]
 ; Кодировка файлов в вашем проекте. Если у вас в проекте разные файлы имеют разную кодировку - я вам не завидую :)
@@ -22,9 +22,12 @@ installed_paths=''
 
 [cpp]
 ; Путь к cpplint
-cpplint=cpplint/cpplint.py
+cpplint=bin/cpplint.py
+; Пути к исполняемому python. Должен быть версии 2.7
 python27Executable=python
+; Папка для временных файлов относительно текущего каталога. Должны быть права на запись
 tmpdir=tmp
+; Максимальная длинна строчки
 lineLength=120
 
 [logging]

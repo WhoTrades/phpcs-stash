@@ -35,7 +35,7 @@ class StashApi
      * @param string $user     пользователь, от имени которого будут делаться запросы
      * @param string $password пароль пользователя
      */
-    public function __construct(Logger $logger, $url, $user, $password)
+    public function __construct(Logger $logger, $url, $user, $password, $timeout = self::HTTP_TIMEOUT)
     {
         $this->username = $user;
         $this->logger = $logger;
@@ -43,7 +43,7 @@ class StashApi
         $config = [
             'base_url' => "{$url}rest/api/1.0/",
             'defaults' => [
-                'timeout' => self::HTTP_TIMEOUT,
+                'timeout' => $timeout,
                 'headers' => [
                     'Content-type' => 'application/json',
                 ],

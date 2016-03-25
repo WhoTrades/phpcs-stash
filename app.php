@@ -10,4 +10,4 @@ require_once('vendor/autoload.php');
 
 $core = new \PhpCsStash\Core(__DIR__."/configuration.ini");
 
-var_export($core->runSync('refs/heads/feature/WTS-3163', 'WT', 'sparta'));
+var_export($core->runSync('refs/heads/feature/WTA-623', 'WT', 'sparta'));

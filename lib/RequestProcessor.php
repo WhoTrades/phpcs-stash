@@ -30,54 +30,25 @@ class RequestProcessor
     private $log;
 
     /**
-     * @var string
+     * @var CheckerInterface
      */
-    private $typeConfig;
+    private $checker;
 
     /**
-     * @var array
-     */
-    private $phpcsConfig;
-
-    /**
-     * @var array
-     */
-    private $cppConfig;
-
-    /**
-     * @param string $baseDir
-     * @param StashApi $stash
-     * @param Logger   $log
-     * @param string   $typeConfig
-     * @param array    $phpcsConfig
-     * @param array    $cppConfig
+     * @param StashApi           $stash
+     * @param Logger             $log
+     * @param CheckerInterface   $checker
      */
     public function __construct(
-		StashApi $stash,
 		Logger $log,
-		array $typeConfig,
-		array $phpcsConfig,
-		array $cppConfig
+		StashApi $stash,
+        CheckerInterface $checker
 	) {
-        $this->stash = $stash;
         $this->log = $log;
-        $this->typeConfig = $typeConfig;
-        $this->phpcsConfig = $phpcsConfig;
-        $this->cppConfig = $cppConfig;
+        $this->stash = $stash;
+        $this->checker = $checker;
     }
 	
-	/** @return CheckerInterface */
-	private function createChecker()	
-	{
-		if ($this->typeConfig['type'] == 'phpcs') {
-			return new Checker\PhpCs($this->log, $this->phpcsConfig);
-		} elseif ($this->typeConfig['type'] == 'cpp') {
-			return new Checker\Cpp($this->log, $this->cppConfig);
-		} else {
-			throw new \PhpCsStash\Exception\Runtime("Unknown checker type");
-		}
-	}
-
     /**
      * @param string $slug
      * @param string $repo
@@ -91,8 +62,6 @@ class RequestProcessor
 
         $pullRequests = $this->stash->getPullRequestsByBranch($slug, $repo, $ref);
 
-        $checker = $this->createChecker();
-
         $this->log->info("Found {$pullRequests['size']} pull requests");
         foreach ($pullRequests['values'] as $pullRequest) {
             $this->log->info(
@@ -102,7 +71,9 @@ class RequestProcessor
             $result = [];
 
             try {
-                $this->stash->addMeToPullRequestReviewers($slug, $repo, $pullRequest['id']);
+				if ($this->stash->getUserName() != $pullRequest['author']['user']['name']) {
+					$this->stash->addMeToPullRequestReviewers($slug, $repo, $pullRequest['id']);
+				}
                 
                 $changes = $this->stash->getPullRequestDiffs($slug, $repo, $pullRequest['id'], 0);
 
@@ -118,7 +89,7 @@ class RequestProcessor
                     $extension = $diff['destination']['extension'];
                     $this->log->info("Processing file $filename");
 
-                    if ($checker->shouldIgnoreFile($filename, $extension, "./")) {
+                    if ($this->checker->shouldIgnoreFile($filename, $extension, "./")) {
                         $this->log->info("File is in ignore list, so no errors can be found");
                         $errors = [];
                     } else {
@@ -147,9 +118,9 @@ class RequestProcessor
                             continue;
                         }
 
-                        $this->log->debug("File content length: ".mb_strlen($fileContent, $this->phpcsConfig['encoding']));
+                        $this->log->debug("File content length: ".mb_strlen($fileContent));
 
-                        $errors = $checker->processFile($filename, $extension, $fileContent);
+                        $errors = $this->checker->processFile($filename, $extension, $fileContent);
                         $this->log->info("Summary errors count: ".count($errors));
                     }
 
@@ -271,7 +242,7 @@ class RequestProcessor
                 $this->log->critical("Error integration with stash: ".$e->getMessage(), [
                     'type' => 'client',
                     'reply' => (string) $e->getResponse()->getBody(),
-                    'headers' => implode("\n", $e->getResponse()->getHeaders()),
+                    'headers' => $e->getResponse()->getHeaders(),
                 ]);
             } catch (ServerException $e) {
                 $this->log->critical("Error integration with stash: ".$e->getMessage(), [

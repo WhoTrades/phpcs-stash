@@ -11,7 +11,7 @@ use Monolog\Logger;
 class PhpCs implements CheckerInterface
 {
 	 /**
-     * @var checker
+     * @var \PHP_CodeSniffer
      */
 	private $phpcs;
 
@@ -40,7 +40,7 @@ class PhpCs implements CheckerInterface
             $this->log->debug("installed_paths=".$GLOBALS['PHP_CODESNIFFER_CONFIG_DATA']['installed_paths']);
         }
 	
-		$phpcs = new \PHP_CodeSniffer(
+		$this->phpcs = new \PHP_CodeSniffer(
 			$verbosity = 0,
 			$tabWidth = 0,
 			$config['encoding'],
@@ -49,13 +49,11 @@ class PhpCs implements CheckerInterface
 
 		$this->log->debug("PhpCs config", $config);
 
-		$phpcs->initStandard($config['standard']);
-		$phpcs->cli->setCommandLineValues([
+		$this->phpcs->initStandard($config['standard']);
+		$this->phpcs->cli->setCommandLineValues([
 			'--report=json',
 			'--standard='.$config['standard'],
 		]);
-		
-		$this->phpcs = $phpcs;
 	}
 
 	/**
@@ -66,7 +64,7 @@ class PhpCs implements CheckerInterface
 	 */
 	public function shouldIgnoreFile($filename, $extension, $dir)
 	{
-		return $this->phpcs->shouldIgnoreFile($filename, $extension, $dir);
+		return $this->phpcs->shouldIgnoreFile($filename, "./");
 	}
 
 	/**
@@ -79,6 +77,7 @@ class PhpCs implements CheckerInterface
     {
         $phpCsResult = $this->phpcs->processFile($filename, $fileContent);
         $errors = $phpCsResult->getErrors();
+		
         return $errors;
     }
 }

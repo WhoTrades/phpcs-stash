@@ -72,7 +72,7 @@ class RequestProcessor
 		if ($this->typeConfig['type'] == 'phpcs') {
 			return new Checker\PhpCs($this->log, $this->phpcsConfig);
 		} elseif ($this->typeConfig['type'] == 'cpp') {
-			return new Checker\Cpp($this->log, $this->cppConfig, $this->baseDir);
+			return new Checker\Cpp($this->log, $this->cppConfig);
 		} else {
 			throw new \PhpCsStash\Exception\Runtime("Unknown checker type");
 		}

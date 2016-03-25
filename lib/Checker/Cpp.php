@@ -39,7 +39,7 @@ class Cpp implements CheckerInterface
      * @param Logger $log
      * @param array $config
      */
-	public function __construct(Logger $log, $config, $baseDir)
+	public function __construct(Logger $log, $config)
 	{
 		$this->log = $log;
 		$this->cpplint = $config['cpplint'];

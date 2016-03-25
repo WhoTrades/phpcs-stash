@@ -142,6 +142,47 @@ class StashApi
      * @param string $slug
      * @param string $repo
      * @param int    $pullRequestId
+     */
+    public function addMeToPullRequestReviewers($slug, $repo, $pullRequestId)
+    {
+        $user = [
+            "name" => $this->username,
+        ];
+
+        return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/participants", "POST", [
+            'user' => $user,
+            'role' => "REVIEWER",
+        ]);
+    }
+
+    /**
+     * @param string $slug
+     * @param string $repo
+     * @param int    $pullRequestId
+     */
+    public function approvePullRequest($slug, $repo, $pullRequestId)
+    {
+        return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/approve", "POST",
+            []
+        );
+    }
+
+    /**
+     * @param string $slug
+     * @param string $repo
+     * @param int    $pullRequestId
+     */
+    public function unapprovePullRequest($slug, $repo, $pullRequestId)
+    {
+        return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/approve", "DELETE",
+            []
+        );
+    }
+
+    /**
+     * @param string $slug
+     * @param string $repo
+     * @param int    $pullRequestId
      * @param string $filename
      * @param int    $line
      * @param string $text

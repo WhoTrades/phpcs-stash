@@ -185,7 +185,7 @@ class RequestProcessor
                                         $pullRequest['id'],
                                         $comment['id'],
                                         $comment['version'],
-                                        preg_replace("/^~+(.*)^/", "~~$1", $comment["text"])
+                                        preg_replace("/^([^~]+)/s", "~~$1", $comment["text"])
                                     );
                                 }
 
@@ -212,7 +212,6 @@ class RequestProcessor
                         }
                     }
 
-
                     foreach ($comments as $line => $comment) {
                         $this->log->info("Adding comment to line=$line, file=$filename", [
                             'line' => $comment,
@@ -228,6 +227,59 @@ class RequestProcessor
                             $comment
                         );
                     }
+                }
+
+                $activities = $this->stash->getPullRequestActivities(
+                    $slug,
+                    $repo,
+                    $pullRequest['id']
+                )['values'];;
+
+                foreach ($activities as $activity) {
+                    if ($activity['action'] != 'COMMENTED' || $activity['commentAction'] != 'ADDED') {
+                        continue;
+                    }
+
+                    if (empty($activity['commentAnchor'])) {
+                        continue;
+                    }
+
+                    if (!$activity['commentAnchor']['orphaned']) {
+                        $this->log->debug("Skip activity #{$activity['id']} as not orphaned");
+                        continue;
+                    }
+
+                    if ($activity['user']['name'] != $this->stash->getUserName()) {
+                        continue;
+                    }
+
+                    if (empty($activity['comment']['id'])) {
+                        $this->log->info("Cannot delete activity #{$activity['id']} as comment id not found");
+                        continue;
+                    }
+
+                    if (empty($activity['comment']['comments'])) {
+                        $this->stash->deletePullRequestComment(
+                            $slug,
+                            $repo,
+                            $pullRequest['id'],
+                            $activity['comment']['version'],
+                            $activity['comment']['id']
+                        );
+                        $this->log->debug("Delete activity #{$activity['id']} (commentId {$activity['comment']['id']}) as orphaned");
+                    } else {
+                        //If there are replies to our comment - just strike through our message
+                        //@see https://confluence.atlassian.com/display/STASH0310/Markdown+syntax+guide#Markdownsyntaxguide-Characterstyles
+                        $this->stash->updatePullRequestComment(
+                            $slug,
+                            $repo,
+                            $pullRequest['id'],
+                            $activity['comment']['id'],
+                            $activity['comment']['version'],
+                            preg_replace("/^([^~]+)/s", "~~$1", $activity['comment']["text"])
+                        );
+                    }
+
                 }
 
                 if (!$result) {

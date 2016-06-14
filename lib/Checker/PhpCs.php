@@ -27,7 +27,7 @@ class PhpCs implements CheckerInterface
 	public function __construct(Logger $log, array $config)
 	{
 		$this->log = $log;
-		
+
 		if (!empty($config['installed_paths'])) {
             $GLOBALS['PHP_CODESNIFFER_CONFIG_DATA'] = array (
                 'installed_paths' => str_replace(
@@ -39,7 +39,7 @@ class PhpCs implements CheckerInterface
 
             $this->log->debug("installed_paths=".$GLOBALS['PHP_CODESNIFFER_CONFIG_DATA']['installed_paths']);
         }
-	
+
 		$this->phpcs = new \PHP_CodeSniffer(
 			$verbosity = 0,
 			$tabWidth = 0,
@@ -49,11 +49,12 @@ class PhpCs implements CheckerInterface
 
 		$this->log->debug("PhpCs config", $config);
 
-		$this->phpcs->initStandard($config['standard']);
 		$this->phpcs->cli->setCommandLineValues([
 			'--report=json',
 			'--standard='.$config['standard'],
 		]);
+
+		$this->phpcs->initStandard($config['standard']);
 	}
 
 	/**
@@ -77,7 +78,7 @@ class PhpCs implements CheckerInterface
     {
         $phpCsResult = $this->phpcs->processFile($filename, $fileContent);
         $errors = $phpCsResult->getErrors();
-		
+
         return $errors;
     }
 }

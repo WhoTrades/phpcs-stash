@@ -138,6 +138,23 @@ class StashApi
         ]);
     }
 
+	/**
+     * @param string $slug
+     * @param string $repo
+     * @param int    $pullRequestId
+     * @param string $filename
+     *
+     * @return array
+     *
+     * @see https://developer.atlassian.com/static/rest/stash/3.11.3/stash-rest.html#idp137840
+     */
+	public function getPullRequestActivities($slug, $repo, $pullRequestId)
+	{
+		return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/activities", "GET", [
+            'limit' => 1000,
+        ]);
+	}
+
     /**
      * @param string $slug
      * @param string $repo
@@ -274,20 +291,25 @@ class StashApi
     {
         try {
             if (strtoupper($method) == 'GET') {
+                $this->logger->debug("Sending GET request to $url, query=" . json_encode($request));
                 $reply = $this->httpClient->get($url, ['query' => $request]);
             } else {
+                $this->logger->debug("Sending $method request to $url, body=" . json_encode($request));
                 $reply = $this->httpClient->send(
                     $this->httpClient->createRequest($method, $url, ['body' => json_encode($request)])
                 );
             }
         } catch (RequestException $e) {
             //Stash error: it can't send more then 1mb of json data. So just skip suck pull requests or files
+            $this->logger->debug("Request finished with error: " . $e->getMessage());
             if ($e->getMessage() == 'cURL error 56: Problem (3) in the Chunked-Encoded data') {
                 throw new Exception\StashJsonFailure($e->getMessage(), $e->getRequest(), $e->getResponse(), $e);
             } else {
                 throw $e;
             }
         }
+
+        $this->logger->debug("Request finished");
 
         $json = (string) $reply->getBody();
 

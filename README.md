@@ -7,7 +7,7 @@
 
 ## Результат работы phpcs-stash
 Результатом работы приложение явлются комментарии в atlassian stash о найденных ошибках в стилях кода
-![скриншот примера результата работы](https://habrastorage.org/files/c62/d96/683/c62d966833d4485a900d6a6f18922438)
+![скриншот примера результата работы](https://raw.githubusercontent.com/WhoTrades/phpcs-stash/master/doc/images/result.png)
 
 ## Установка и настройка
 0. Клонировать репозиторий

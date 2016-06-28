@@ -10,25 +10,25 @@ use Monolog\Logger;
 
 class PhpCs implements CheckerInterface
 {
-	 /**
+     /**
      * @var \PHP_CodeSniffer
      */
-	private $phpcs;
-
-	/**
-     * @var Logger
-     */
-	private $log;
+    private $phpcs;
 
     /**
-	 * @param Logger   $log
+     * @var Logger
+     */
+    private $log;
+
+    /**
+     * @param Logger   $log
      * @param array $phpcs - ['encoding' => '....', 'standard' => '...']
      */
-	public function __construct(Logger $log, array $config)
-	{
-		$this->log = $log;
+    public function __construct(Logger $log, array $config)
+    {
+        $this->log = $log;
 
-		if (!empty($config['installed_paths'])) {
+        if (!empty($config['installed_paths'])) {
             $GLOBALS['PHP_CODESNIFFER_CONFIG_DATA'] = array (
                 'installed_paths' => str_replace(
                     '%root%',
@@ -40,40 +40,40 @@ class PhpCs implements CheckerInterface
             $this->log->debug("installed_paths=".$GLOBALS['PHP_CODESNIFFER_CONFIG_DATA']['installed_paths']);
         }
 
-		$this->phpcs = new \PHP_CodeSniffer(
-			$verbosity = 0,
-			$tabWidth = 0,
-			$config['encoding'],
-			$interactive = false
-		);
+        $this->phpcs = new \PHP_CodeSniffer(
+            $verbosity = 0,
+            $tabWidth = 0,
+            $config['encoding'],
+            $interactive = false
+        );
 
-		$this->log->debug("PhpCs config", $config);
+        $this->log->debug("PhpCs config", $config);
 
-		$this->phpcs->cli->setCommandLineValues([
-			'--report=json',
-			'--standard='.$config['standard'],
-		]);
+        $this->phpcs->cli->setCommandLineValues([
+            '--report=json',
+            '--standard='.$config['standard'],
+        ]);
 
-		$this->phpcs->initStandard($config['standard']);
-	}
+        $this->phpcs->initStandard($config['standard']);
+    }
 
-	/**
-	 * @param string $filename
-	 * @param string $extension
+    /**
+     * @param string $filename
+     * @param string $extension
      * @param string $dir
-	 * @return bool
-	 */
-	public function shouldIgnoreFile($filename, $extension, $dir)
-	{
-		return $this->phpcs->shouldIgnoreFile($filename, "./");
-	}
+     * @return bool
+     */
+    public function shouldIgnoreFile($filename, $extension, $dir)
+    {
+        return $this->phpcs->shouldIgnoreFile($filename, "./");
+    }
 
-	/**
-	 * @param string $filename
-	 * @param string $extension
+    /**
+     * @param string $filename
+     * @param string $extension
      * @param string $fileContent
-	 * @return array
-	 */
+     * @return array
+     */
     public function processFile($filename, $extension, $fileContent)
     {
         $phpCsResult = $this->phpcs->processFile($filename, $fileContent);

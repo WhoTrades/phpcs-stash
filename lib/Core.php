@@ -20,7 +20,7 @@ class Core
 
     /** @var array */
     protected $config;
-	
+    
     /**
      * Core constructor.
      * @param string $configFilename путь к ini файлу конфигурации

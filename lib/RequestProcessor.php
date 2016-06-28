@@ -40,15 +40,15 @@ class RequestProcessor
      * @param CheckerInterface   $checker
      */
     public function __construct(
-		Logger $log,
-		StashApi $stash,
+        Logger $log,
+        StashApi $stash,
         CheckerInterface $checker
-	) {
+    ) {
         $this->log = $log;
         $this->stash = $stash;
         $this->checker = $checker;
     }
-	
+    
     /**
      * @param string $slug
      * @param string $repo
@@ -286,8 +286,8 @@ class RequestProcessor
                     $this->stash->approvePullRequest($slug, $repo, $pullRequest['id']);
                     $this->log->info("Approved pull request #{$pullRequest['id']}");
                 } else {
-					$this->stash->unapprovePullRequest($slug, $repo, $pullRequest['id']);
-				}
+                    $this->stash->unapprovePullRequest($slug, $repo, $pullRequest['id']);
+                }
 
                 return $result;
             } catch (ClientException $e) {

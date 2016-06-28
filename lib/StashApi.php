@@ -138,7 +138,7 @@ class StashApi
         ]);
     }
 
-	/**
+    /**
      * @param string $slug
      * @param string $repo
      * @param int    $pullRequestId
@@ -148,12 +148,12 @@ class StashApi
      *
      * @see https://developer.atlassian.com/static/rest/stash/3.11.3/stash-rest.html#idp137840
      */
-	public function getPullRequestActivities($slug, $repo, $pullRequestId)
-	{
-		return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/activities", "GET", [
+    public function getPullRequestActivities($slug, $repo, $pullRequestId)
+    {
+        return $this->sendRequest("projects/$slug/repos/$repo/pull-requests/$pullRequestId/activities", "GET", [
             'limit' => 1000,
         ]);
-	}
+    }
 
     /**
      * @param string $slug

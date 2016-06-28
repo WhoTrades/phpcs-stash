@@ -71,9 +71,9 @@ class RequestProcessor
             $result = [];
 
             try {
-				if ($this->stash->getUserName() != $pullRequest['author']['user']['name']) {
-					$this->stash->addMeToPullRequestReviewers($slug, $repo, $pullRequest['id']);
-				}
+                if ($this->stash->getUserName() != $pullRequest['author']['user']['name']) {
+                    $this->stash->addMeToPullRequestReviewers($slug, $repo, $pullRequest['id']);
+                }
                 
                 $changes = $this->stash->getPullRequestDiffs($slug, $repo, $pullRequest['id'], 0);
 

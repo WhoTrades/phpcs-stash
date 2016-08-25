@@ -65,7 +65,7 @@ class RequestProcessor
         $this->log->info("Found {$pullRequests['size']} pull requests");
         foreach ($pullRequests['values'] as $pullRequest) {
             $this->log->info(
-                "Processing pull request #{$pullRequest['id']} {$pullRequest['fromRef']['latestChangeset']}..{$pullRequest['toRef']['latestChangeset']}"
+                "Processing pull request #{$pullRequest['id']} {$pullRequest['fromRef']['latestCommit']}..{$pullRequest['toRef']['latestCommit']}"
             );
 
             $result = [];

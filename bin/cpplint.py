@@ -1880,8 +1880,8 @@ def CheckForHeaderGuard(filename, clean_lines, error):
       return
 
   # Didn't find anything
-  error(filename, endif_linenum, 'build/header_guard', 5,
-        '#endif line should be "#endif  // %s"' % cppvar)
+  # error(filename, endif_linenum, 'build/header_guard', 5,
+  #       '#endif line should be "#endif  // %s"' % cppvar)
 
 
 def CheckHeaderFileIncluded(filename, include_state, error):
@@ -3696,28 +3696,28 @@ def CheckBraces(filename, clean_lines, linenum, error):
     #        '{ should almost always be at the end of the previous line')
 
   # An else clause should be on the same line as the preceding closing brace.
-  if Match(r'\s*else\b\s*(?:if\b|\{|$)', line):
-    prevline = GetPreviousNonBlankLine(clean_lines, linenum)[0]
-    if Match(r'\s*}\s*$', prevline):
-      error(filename, linenum, 'whitespace/newline', 4,
-            'An else should appear on the same line as the preceding }')
+  # if Match(r'\s*else\b\s*(?:if\b|\{|$)', line):
+  #   prevline = GetPreviousNonBlankLine(clean_lines, linenum)[0]
+  #   if Match(r'\s*}\s*$', prevline):
+  #     error(filename, linenum, 'whitespace/newline', 4,
+  #           'An else should appear on the same line as the preceding }')
 
   # If braces come on one side of an else, they should be on both.
   # However, we have to worry about "else if" that spans multiple lines!
-  if Search(r'else if\s*\(', line):       # could be multi-line if
-    brace_on_left = bool(Search(r'}\s*else if\s*\(', line))
-    # find the ( after the if
-    pos = line.find('else if')
-    pos = line.find('(', pos)
-    if pos > 0:
-      (endline, _, endpos) = CloseExpression(clean_lines, linenum, pos)
-      brace_on_right = endline[endpos:].find('{') != -1
-      if brace_on_left != brace_on_right:    # must be brace after if
-        error(filename, linenum, 'readability/braces', 5,
-              'If an else has a brace on one side, it should have it on both')
-  elif Search(r'}\s*else[^{]*$', line) or Match(r'[^}]*else\s*{', line):
-    error(filename, linenum, 'readability/braces', 5,
-          'If an else has a brace on one side, it should have it on both')
+  # if Search(r'else if\s*\(', line):       # could be multi-line if
+  #   brace_on_left = bool(Search(r'}\s*else if\s*\(', line))
+  #   # find the ( after the if
+  #   pos = line.find('else if')
+  #   pos = line.find('(', pos)
+  #   if pos > 0:
+  #     (endline, _, endpos) = CloseExpression(clean_lines, linenum, pos)
+  #     brace_on_right = endline[endpos:].find('{') != -1
+  #     if brace_on_left != brace_on_right:    # must be brace after if
+  #       error(filename, linenum, 'readability/braces', 5,
+  #             'If an else has a brace on one side, it should have it on both')
+  # elif Search(r'}\s*else[^{]*$', line) or Match(r'[^}]*else\s*{', line):
+  #   error(filename, linenum, 'readability/braces', 5,
+  #         'If an else has a brace on one side, it should have it on both')
 
   # Likewise, an else should never have the else clause on the same line
   if Search(r'\belse [^\s{]', line) and not Search(r'\belse if\b', line):
@@ -4506,18 +4506,18 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
       # using a number of techniques. The include_state object keeps
       # track of the highest type seen, and complains if we see a
       # lower type after that.
-      error_message = include_state.CheckNextIncludeOrder(
-          _ClassifyInclude(fileinfo, include, is_system))
-      if error_message:
-        error(filename, linenum, 'build/include_order', 4,
-              '%s. Should be: %s.h, c system, c++ system, other.' %
-              (error_message, fileinfo.BaseName()))
-      canonical_include = include_state.CanonicalizeAlphabeticalOrder(include)
-      if not include_state.IsInAlphabeticalOrder(
-          clean_lines, linenum, canonical_include):
-        error(filename, linenum, 'build/include_alpha', 4,
-              'Include "%s" not in alphabetical order' % include)
-      include_state.SetLastHeader(canonical_include)
+      # error_message = include_state.CheckNextIncludeOrder(
+      #     _ClassifyInclude(fileinfo, include, is_system))
+      # if error_message:
+      #   error(filename, linenum, 'build/include_order', 4,
+      #         '%s. Should be: %s.h, c system, c++ system, other.' %
+      #         (error_message, fileinfo.BaseName()))
+      # canonical_include = include_state.CanonicalizeAlphabeticalOrder(include)
+      # if not include_state.IsInAlphabeticalOrder(
+      #     clean_lines, linenum, canonical_include):
+      #   error(filename, linenum, 'build/include_alpha', 4,
+      #         'Include "%s" not in alphabetical order' % include)
+      # include_state.SetLastHeader(canonical_include)
 
 
 

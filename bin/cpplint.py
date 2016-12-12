@@ -1880,8 +1880,8 @@ def CheckForHeaderGuard(filename, clean_lines, error):
       return
 
   # Didn't find anything
-  error(filename, endif_linenum, 'build/header_guard', 5,
-        '#endif line should be "#endif  // %s"' % cppvar)
+  # error(filename, endif_linenum, 'build/header_guard', 5,
+  #       '#endif line should be "#endif  // %s"' % cppvar)
 
 
 def CheckHeaderFileIncluded(filename, include_state, error):

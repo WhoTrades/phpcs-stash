@@ -4506,18 +4506,18 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
       # using a number of techniques. The include_state object keeps
       # track of the highest type seen, and complains if we see a
       # lower type after that.
-      error_message = include_state.CheckNextIncludeOrder(
-          _ClassifyInclude(fileinfo, include, is_system))
-      if error_message:
-        error(filename, linenum, 'build/include_order', 4,
-              '%s. Should be: %s.h, c system, c++ system, other.' %
-              (error_message, fileinfo.BaseName()))
-      canonical_include = include_state.CanonicalizeAlphabeticalOrder(include)
-      if not include_state.IsInAlphabeticalOrder(
-          clean_lines, linenum, canonical_include):
-        error(filename, linenum, 'build/include_alpha', 4,
-              'Include "%s" not in alphabetical order' % include)
-      include_state.SetLastHeader(canonical_include)
+      # error_message = include_state.CheckNextIncludeOrder(
+      #     _ClassifyInclude(fileinfo, include, is_system))
+      # if error_message:
+      #   error(filename, linenum, 'build/include_order', 4,
+      #         '%s. Should be: %s.h, c system, c++ system, other.' %
+      #         (error_message, fileinfo.BaseName()))
+      # canonical_include = include_state.CanonicalizeAlphabeticalOrder(include)
+      # if not include_state.IsInAlphabeticalOrder(
+      #     clean_lines, linenum, canonical_include):
+      #   error(filename, linenum, 'build/include_alpha', 4,
+      #         'Include "%s" not in alphabetical order' % include)
+      # include_state.SetLastHeader(canonical_include)
 
 
 

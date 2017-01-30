@@ -4933,7 +4933,7 @@ def IsInitializerList(clean_lines, linenum):
   # constructor initializer list.
   return False
 
-
+# This check is disabled
 def CheckForNonConstReference(filename, clean_lines, linenum,
                               nesting_state, error):
   """Check for non-const references.
@@ -4949,6 +4949,9 @@ def CheckForNonConstReference(filename, clean_lines, linenum,
                    the current stack of nested blocks being parsed.
     error: The function to call with any errors found.
   """
+  
+  return
+  
   # Do nothing if there is no '&' on current line.
   line = clean_lines.elided[linenum]
   if '&' not in line:

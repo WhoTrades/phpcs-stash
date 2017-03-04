@@ -6,80 +6,43 @@
  */
 namespace PhpCsStash;
 
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\BrowserConsoleHandler;
+use PhpCsStash\Checker\CheckerInterface;
+use Psr\Log\LoggerInterface;
 
 class Core
 {
-    /** @var StashApi */
+    /**
+     * @var StashApi
+     */
     protected $stash;
 
-    /** @var Logger */
+    /**
+     * @var LoggerInterface
+     */
     protected $log;
 
-    /** @var array */
-    protected $config;
+    /**
+     * @var CheckerInterface
+     */
+    private $checker;
 
     /**
-     * Core constructor.
-     * @param string $configFilename путь к ini файлу конфигурации
+     * @param array $stashConfig
+     * @param LoggerInterface $logger
+     * @param CheckerInterface $checker
      */
-    public function __construct($configFilename)
+    public function __construct(array $stashConfig, LoggerInterface $logger, CheckerInterface $checker)
     {
-        $this->config = parse_ini_file($configFilename, true);
+        $this->log = $logger;
+        $this->checker = $checker;
 
-        $this->initLogger();
-
-        $stashConfig = $this->getConfigSection('stash');
         $this->stash = new StashApi(
-            $this->getLogger(),
+            $this->log,
             $stashConfig['url'],
             $stashConfig['username'],
             $stashConfig['password'],
             $stashConfig['timeout']
         );
-    }
-
-    protected function initLogger()
-    {
-        $this->log = new Logger(uniqid());
-        $dir = $this->config['logging']['dir']."/";
-
-        $this->log->pushHandler(
-            new StreamHandler($dir.date("Y-m-d").".log", $this->config['logging']['verbosityLog'])
-        );
-
-        $this->log->pushHandler(
-            new StreamHandler($dir.date("Y-m-d").".log", $this->config['logging']['verbosityError'])
-        );
-
-        $this->log->pushHandler(
-            new BrowserConsoleHandler()
-        );
-    }
-
-    /** @return Logger */
-    public function getLogger()
-    {
-        return $this->log;
-    }
-
-    /**
-     * @return StashApi
-     */
-    public function getStash()
-    {
-        return $this->stash;
-    }
-
-    /**
-     * @param string $section название секции в ini файле конфигурации
-     * @return array
-     */
-    public function getConfigSection($section)
-    {
-        return $this->config[$section];
     }
 
     /**
@@ -93,7 +56,7 @@ class Core
     public function runSync($branch, $slug, $repo)
     {
         if (empty($branch) || empty($repo) || empty($slug)) {
-            $this->getLogger()->warning("Invalid request: empty slug or branch or repo", $_GET);
+            $this->log->warning("Invalid request: empty slug or branch or repo", $_GET);
             throw new \InvalidArgumentException("Invalid request: empty slug or branch or repo");
         }
 
@@ -109,28 +72,11 @@ class Core
     protected function createRequestProcessor()
     {
         $requestProcessor = new RequestProcessor(
-            $this->getLogger(),
-            $this->getStash(),
-            $this->createChecker()
+            $this->log,
+            $this->stash,
+            $this->checker
         );
 
         return $requestProcessor;
-    }
-
-    /**
-     * @return Checker\CheckerInterface
-     * @throws Exception\Runtime
-     */
-    protected function createChecker()
-    {
-        $type = $this->getConfigSection('core')['type'];
-
-        if ($type == 'phpcs') {
-            return new Checker\PhpCs($this->log, $this->getConfigSection('phpcs'));
-        } elseif ($type == 'cpp') {
-            return new Checker\Cpp($this->log, $this->getConfigSection('cpp'));
-        } else {
-            throw new Exception\Runtime("Unknown checker type");
-        }
     }
 }

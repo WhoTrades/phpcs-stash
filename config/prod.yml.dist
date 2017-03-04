@@ -1,0 +1,38 @@
+debug: true
+
+stash:
+    # Base url to atlassian stash or bitbucket
+    url: 'http://stash.com'
+    # Name of the user from which api will be used
+    username: 'admin'
+    # Password of the user
+    password: 'admin'
+    # Maximum time to wait for
+    timeout: 90
+
+checker.type: phpcs
+
+checker.phpcs:
+        # Project's file encoding. Your project's files should only have one :)
+        encoding: utf-8
+        # Code standatrd. This paramter is passed to phpcs with argument --standard
+        standard: PSR2
+        # (Optional) Path for additional (custom) coding standards paths
+        installed_paths:
+
+checker.cpp:
+        # Path to cpplint
+        cpplint: bin/cpplint.py
+        # Path to python executable. Python should be at version 2.7
+        python27Executable: python
+        # Directory for temporary files. Should be writable
+        tmpdir: tmp
+        # Maximum line length
+        lineLength: 120
+
+# Log folder path
+monolog.phpcs.dir: log
+# Verbosity level for info log
+monolog.phpcs.info.level: DEBUG
+# Verbosity level for error log
+monolog.phpcs.error.level: ERROR

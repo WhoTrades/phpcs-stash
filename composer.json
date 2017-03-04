@@ -13,6 +13,9 @@
         "squizlabs/php_codesniffer": "~2.5",
         "guzzlehttp/guzzle": "~5.3",
         "monolog/monolog": "~1.17",
-        "php": ">=5.4"
+        "php": ">=5.4",
+        "silex/silex": "~2.0",
+        "reva2/config-service-provider": "^2.0",
+        "symfony/yaml": "~3.1"
     }
 }

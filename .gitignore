@@ -1,4 +1,4 @@
 .idea
 vendor
-configuration.ini
-app.php
+config/*
+!config/prod.yml.dist

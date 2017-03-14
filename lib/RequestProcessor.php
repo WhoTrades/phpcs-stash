@@ -87,6 +87,11 @@ class RequestProcessor
             $changes = $this->stash->getPullRequestDiffs($slug, $repo, $pullRequest['id'], 0);
 
             foreach ($changes['diffs'] as $diff) {
+				// файл был удален, нечего проверять
+				if ($diff['destination'] === null) {
+					$this->log->info("Skip processing {$diff['source']['toString']}, as it was removed");
+					continue;
+				}
                 $filename = $diff['destination']['toString'];
                 $errors = $this->getDiffErrors($slug, $repo, $diff, $filename, $pullRequest['id']);
                 $affectedLines = $this->getDiffAffectedLines($diff);
@@ -103,12 +108,7 @@ class RequestProcessor
 
             $this->removeOutdatedRobotComments($slug, $repo, $pullRequest['id']);
 
-            if (!$result) {
-                $this->stash->approvePullRequest($slug, $repo, $pullRequest['id']);
-                $this->log->info("Approved pull request #{$pullRequest['id']}");
-            } else {
-                $this->stash->unapprovePullRequest($slug, $repo, $pullRequest['id']);
-            }
+			$this->markPullRequestMark($slug, $repo, $pullRequest['id'], $result);
         } catch (ClientException $e) {
             $this->log->critical("Error integration with stash: ".$e->getMessage(), [
                 'type' => 'client',
@@ -127,15 +127,20 @@ class RequestProcessor
 
         return $result;
     }
+	
+	protected function markPullRequestMark($slug, $repo, $pullRequestId, $result)
+	{
+		if (!$result) {
+			$this->stash->approvePullRequest($slug, $repo, $pullRequestId);
+			$this->log->info("Approved pull request #$pullRequestId");
+		} else {
+			$this->stash->unapprovePullRequest($slug, $repo, $pullRequestId);
+			$this->log->info("Unapprove pull request #$pullRequestId");
+		}
+	}
 
     protected function getDiffErrors($slug, $repo, $diff, $filename, $pullRequestId)
     {
-        // файл был удален, нечего проверять
-        if ($diff['destination'] === null) {
-            $this->log->info("Skip processing {$diff['source']['toString']}, as it was removed");
-            return [];
-        }
-
         $extension = $diff['destination']['extension'];
         $this->log->info("Processing file $filename");
 

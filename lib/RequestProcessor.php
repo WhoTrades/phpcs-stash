@@ -175,13 +175,15 @@ class RequestProcessor
     {
         $affectedLines = [];
 
-        foreach ($diff['hunks'] as $hunk) {
-            foreach ($hunk['segments'] as $segment) {
-                if ($segment['type'] == 'CONTEXT' || $segment['type'] == 'REMOVED') {
-                    continue;
-                }
-                foreach ($segment['lines'] as $line) {
-                    $affectedLines[] = $line['destination'];
+        if (!empty($diff['hunks'])) {
+            foreach ($diff['hunks'] as $hunk) {
+                foreach ($hunk['segments'] as $segment) {
+                    if ($segment['type'] == 'CONTEXT' || $segment['type'] == 'REMOVED') {
+                        continue;
+                    }
+                    foreach ($segment['lines'] as $line) {
+                        $affectedLines[] = $line['destination'];
+                    }
                 }
             }
         }

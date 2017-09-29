@@ -63,12 +63,12 @@ class RequestProcessor
         $pullRequests = $this->stash->getPullRequestsByBranch($slug, $repo, $ref);
 
         $this->log->info("Found {$pullRequests['size']} pull requests");
+        $result = [];
         foreach ($pullRequests['values'] as $pullRequest) {
-            $this->processPullRequest($slug, $repo, $pullRequest);
+            $result = array_merge($result, $this->processPullRequest($slug, $repo, $pullRequest));
         }
 
-        // No pull requests found, so no errors
-        return [];
+        return $result;
     }
 
     protected function processPullRequest($slug, $repo, array $pullRequest)

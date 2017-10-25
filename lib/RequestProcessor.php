@@ -141,7 +141,7 @@ class RequestProcessor
 
     protected function getDiffErrors($slug, $repo, $diff, $filename, $pullRequestId)
     {
-        $extension = $diff['destination']['extension'];
+        $extension = $diff['destination']['extension'] ?? null;
         $this->log->info("Processing file $filename");
 
         if ($this->checker->shouldIgnoreFile($filename, $extension, "./")) {

@@ -18,7 +18,7 @@
 
 ## Запуск
 Запускать приложение можно двумя путями:
-1. С помощью консоли: запускаем команду ```php app.php <branch> <slug> <repo>``` (например, для репозитория https://example.com/projects/WT/repos/sparta/browse <slug> будет равно WT, а <repo> - sparta
+1. С помощью консоли: запускаем команду ```php app.php <branch> <slug> <repo>``` (например, для репозитория https://example.com/projects/WT/repos/sparta/browse slug будет равно WT, а repo - sparta
 2. С помощью HTTP запроса: index.php?slug=<slug>&branch=<branch>&repo=<repo>
 
 ## Интеграция с pull request

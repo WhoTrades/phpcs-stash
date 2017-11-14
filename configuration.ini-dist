@@ -1,14 +1,14 @@
 [stash]
-; базовая ссылка на ваш atlassian stash со слешом вконце
-url = "http://stash.com/"
+; базовая ссылка на ваш atlassian bitbacket со слешом вконце
+url = "https://bitbacket.org/"
 ; Имя пользователя, от которого будет производиться интеграция
 username = "apiUser"
 ; Пароль пользователя, от которого будет производиться интеграция
 password = "apiUserpassword"
-; Максимальное время ожидания ответа stash сервера. Эту настройку рекомендуется не менять
+; Максимальное время ожидания ответа bitbacket сервера. Эту настройку рекомендуется не менять
 httpTimeout = 90
 
-[type]
+[core]
 ;phpcs или cpp
 type=phpcs
 
@@ -16,7 +16,7 @@ type=phpcs
 ; Кодировка файлов в вашем проекте. Если у вас в проекте разные файлы имеют разную кодировку - я вам не завидую :)
 encoding=utf-8
 ; Стандарт кодирония. Этот аргумент передается phpcs в аргументе --standard
-standard=Psr2
+standard='vendor/squizlabs/php_codesniffer/CodeSniffer/Standards/PSR2/ruleset.xml'
 ; Пути установки дополнительных стилей кодирования
 installed_paths=''
 
@@ -37,3 +37,5 @@ dir=log
 verbosityError=ERROR
 ; уровень вербозности info-лога
 verbosityLog=DEBUG
+; Выводить ли лог прямо в консоль
+logToStdOut=1

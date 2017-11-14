@@ -53,6 +53,12 @@ class Core
         $this->log->pushHandler(
             new StreamHandler($dir.date("Y-m-d").".log", $this->config['logging']['verbosityError'])
         );
+		
+		if (!empty($this->config['logging']['logToStdOut'])) {
+		    $this->log->pushHandler(
+			    new StreamHandler("php://stdout", $this->config['logging']['verbosityError'])
+		    );
+		}
 
         $this->log->pushHandler(
             new BrowserConsoleHandler()

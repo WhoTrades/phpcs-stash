@@ -10,4 +10,9 @@ require_once('vendor/autoload.php');
 
 $core = new \PhpCsStash\Core(__DIR__."/configuration.ini");
 
-var_export($core->runSync('refs/heads/feature/WTA-623', 'WT', 'sparta'));
+if (empty($_SERVER['argv'][3])) {
+	die("Usage: php app.php <branch> <slug> <repo>");
+	exit(1);
+}
+
+var_export($core->runSync('refs/heads/' . $_SERVER['argv'][1], $_SERVER['argv'][2], $_SERVER['argv'][3]));

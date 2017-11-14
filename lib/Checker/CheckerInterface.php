@@ -20,7 +20,7 @@ interface CheckerInterface
      * @param string $filename
      * @param string $extension
      * @param string $fileContent
-     * @return array
+     * @return array - key is line number of $fileContent, value - is array of errors at this line
      */
     public function processFile($filename, $extension, $fileContent);
 }

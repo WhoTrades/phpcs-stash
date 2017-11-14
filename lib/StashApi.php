@@ -82,14 +82,16 @@ class StashApi
                 continue;
             }
 
-            foreach ($diff['hunks'] as $hunk) {
-                foreach ($hunk['segments'] as $segment) {
-                    foreach ($segment['lines'] as $line) {
-                        if (!empty($line['conflictMarker'])) {
-                            throw new StashFileInConflict("File $filename is in conflict state");
-                        }
+            if (!empty($diff['hunks'])) {
+                foreach ($diff['hunks'] as $hunk) {
+                    foreach ($hunk['segments'] as $segment) {
+                        foreach ($segment['lines'] as $line) {
+                            if (!empty($line['conflictMarker'])) {
+                                throw new StashFileInConflict("File $filename is in conflict state");
+                            }
 
-                        $result[$line['destination']] = $line['line'];
+                            $result[$line['destination']] = $line['line'];
+                        }
                     }
                 }
             }

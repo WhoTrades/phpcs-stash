@@ -20,7 +20,7 @@ class Core
 
     /** @var array */
     protected $config;
-    
+
     /**
      * Core constructor.
      * @param string $configFilename путь к ini файлу конфигурации
@@ -94,6 +94,7 @@ class Core
      * @param string $slug
      * @param string $repo
      * @throws \InvalidArgumentException
+     * @return array
      */
     public function runSync($branch, $slug, $repo)
     {
@@ -102,20 +103,31 @@ class Core
             throw new \InvalidArgumentException("Invalid request: empty slug or branch or repo");
         }
 
+        $requestProcessor = $this->createRequestProcessor();
+
+        return $requestProcessor->processRequest($slug, $repo, $branch);
+    }
+
+    /**
+     * @return RequestProcessor
+     * @throws Exception\Runtime
+     */
+    protected function createRequestProcessor()
+    {
         $requestProcessor = new RequestProcessor(
             $this->getLogger(),
             $this->getStash(),
             $this->createChecker()
         );
 
-        return $requestProcessor->processRequest($slug, $repo, $branch);
+        return $requestProcessor;
     }
 
     /**
      * @return Checker\CheckerInterface
      * @throws Exception\Runtime
      */
-    private function createChecker()
+    protected function createChecker()
     {
         $type = $this->getConfigSection('core')['type'];
 

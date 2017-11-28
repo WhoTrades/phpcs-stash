@@ -1,3 +1,6 @@
+# DEPRECATED. Use [bitbucket-codestyle](https://github.com/WhoTrades/bitbucket-codestyle) instead
+
+
 # phpcs-stash
 Скрипт, для интеграции phpcs и atlassian stash. Скрипт проверяет pull request на соответствию кодстайлу, и комментирует рецензию найденными ошибками
 Больше можно прочесть на https://habrahabr.ru/post/303348/
